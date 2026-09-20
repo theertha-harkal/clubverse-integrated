@@ -1,6 +1,6 @@
-# Clubverse — Integration Log
+# Clubverse - Integration Log
 
-**Author:** Person 4 — Integration, Testing, Debugging & Delivery
+**Author:** Person 4 - Integration, Testing, Debugging & Delivery
 **Project:** Clubverse (University Group Project)
 
 ## Overview
@@ -92,11 +92,11 @@ and get the whole thing into a runnable state.
 - Checked every entity's required (`NOT NULL`) database fields against the
   corresponding frontend form to make sure nothing could be submitted
   incomplete.
-- Ran the frontend build (`npm run build`) and linter (`npm run lint`) —
+- Ran the frontend build (`npm run build`) and linter (`npm run lint`) -
   both pass cleanly with no errors.
 - _[Fill in once you've run it locally: backend start via
   `mvn spring-boot:run` / `./mvnw spring-boot:run`, Postgres connection
-  confirmed, frontend `npm run dev`, and a walkthrough of the core flows —
+  confirmed, frontend `npm run dev`, and a walkthrough of the core flows -
   register/login, create a post, browse and register for an event, submit
   a volunteer application, approve an event as campus admin — actually
   exercised on your machine.]_
@@ -109,5 +109,5 @@ backend feature behind them are clearly labeled rather than left looking
 falsely functional. Remaining before final submission: your own local run
 to confirm the backend starts against Postgres and the frontend serves
 correctly end-to-end, and creating a Club Admin / Campus Admin test account
-(registration only creates Student accounts by default — promote a user's
+(registration only creates Student accounts by default - promote a user's
 role directly in the database to test the admin views).
