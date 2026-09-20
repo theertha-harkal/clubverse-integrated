@@ -20,7 +20,7 @@ and get the whole thing into a runnable state.
 - Reviewed every backend controller (`AuthController`, `PostController`,
   `CommentController`, `EventController`, `RegistrationController`,
   `VolunteerController`, `AnnouncementController`, `ReportController`) and
-  mapped out the full API surface — routes, HTTP methods, request/response
+  mapped out the full API surface - routes, HTTP methods, request/response
   shapes, and which roles can access what.
 - Built a single API client layer on the frontend (`src/lib/api.js`) so
   every screen talks to the backend through one consistent, typed
