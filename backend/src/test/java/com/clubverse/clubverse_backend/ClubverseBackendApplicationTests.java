@@ -37,10 +37,13 @@ class ClubverseBackendApplicationTests {
     @Test
     void testEventRegistration() {
 
-        // Create a test student
+        // Create test student
         User user = new User();
         user.setName("JUnit Student");
-        user.setEmail("junit" + System.currentTimeMillis() + "@college.edu");
+        user.setEmail(
+                "junit" + System.currentTimeMillis()
+                        + "@college.edu"
+        );
         user.setPassword("Test@123");
         user.setRole(User.Role.STUDENT);
         user.setRollNumber("TEST001");
@@ -49,48 +52,59 @@ class ClubverseBackendApplicationTests {
 
         user = userRepository.save(user);
 
-        // Create a test event
+        // Create test event
         Event event = new Event();
         event.setTitle("JUnit Test Event");
-        event.setDescription("Event created for JUnit testing");
-        event.setEventDate(LocalDate.now().plusDays(10));
-        event.setRegistrationDeadline(LocalDate.now().plusDays(5));
+        event.setDescription(
+                "Event created for JUnit testing"
+        );
+        event.setEventDate(
+                LocalDate.now().plusDays(10)
+        );
+        event.setRegistrationDeadline(
+                LocalDate.now().plusDays(5)
+        );
         event.setMaxRegistrations(10);
         event.setRegisteredCount(0);
         event.setFreeEntry(true);
 
         event = eventRepository.save(event);
 
-        // Register the student
+        // Store final values for lambda
+        final String userEmail = user.getEmail();
+        final Long eventId = event.getId();
+        final Long userId = user.getId();
+
+        // Register student
         var response =
                 registrationService.register(
-                        event.getId(),
-                        user.getEmail()
+                        eventId,
+                        userEmail
                 );
 
-        // Verify registration response
+        // Verify response
         assertNotNull(response);
 
-        // Verify registration is stored in database
+        // Verify registration exists
         Optional<Registration> registration =
                 registrationRepository
                         .findByEventIdAndUserId(
-                                event.getId(),
-                                user.getId()
+                                eventId,
+                                userId
                         );
 
         assertTrue(registration.isPresent());
 
-        // Verify registration status
+        // Verify status
         assertEquals(
                 Registration.Status.CONFIRMED,
                 registration.get().getStatus()
         );
 
-        // Verify event registered count increased
+        // Verify registered count
         Event updatedEvent =
                 eventRepository
-                        .findById(event.getId())
+                        .findById(eventId)
                         .orElseThrow();
 
         assertEquals(
@@ -103,8 +117,8 @@ class ClubverseBackendApplicationTests {
                 assertThrows(
                         RuntimeException.class,
                         () -> registrationService.register(
-                                event.getId(),
-                                user.getEmail()
+                                eventId,
+                                userEmail
                         )
                 );
 
