@@ -1,3 +1,4 @@
+
 package com.clubverse.clubverse_backend.repository;
 
 import com.clubverse.clubverse_backend.entity.Comment;
@@ -10,4 +11,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPostIdAndParentCommentIsNull(Long postId);
 
     List<Comment> findByParentCommentId(Long parentCommentId);
+
+    List<Comment> findByUserId(Long userId);
 }

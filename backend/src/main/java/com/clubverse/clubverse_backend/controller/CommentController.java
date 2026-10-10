@@ -42,4 +42,17 @@ public class CommentController {
                 commentService.getComments(postId)
         );
     }
+    
+@DeleteMapping("/comments/{commentId}")
+public ResponseEntity<Void> deleteComment(
+        @PathVariable Long commentId,
+        Authentication authentication) {
+
+    String email = authentication.getName();
+
+    commentService.deleteComment(commentId, email);
+
+    return ResponseEntity.noContent().build();
+}
+
 }

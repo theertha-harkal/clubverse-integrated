@@ -67,6 +67,27 @@ public class CommentService {
                 .map(this::convertToResponse)
                 .toList();
     }
+    
+public void deleteComment(Long commentId, String email) {
+
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    Comment comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new RuntimeException("Comment not found"));
+
+    if (!comment.getUser().getId().equals(user.getId())) {
+        throw new RuntimeException("You can only delete your own comments");
+    }
+
+    if (!commentRepository.findByParentCommentId(commentId).isEmpty()) {
+        throw new RuntimeException(
+                "Cannot delete a comment that has replies");
+    }
+
+    commentRepository.delete(comment);
+}
+
 
     private CommentResponse convertToResponse(Comment comment) {
 
