@@ -99,4 +99,11 @@ public class AnnouncementController {
                 )
         );
     }
+    @DeleteMapping("/{id}")
+public ResponseEntity<Void> deleteAnnouncement(
+        @PathVariable Long id) {
+
+    announcementService.deleteAnnouncement(id);
+    return ResponseEntity.noContent().build();
+}
 }

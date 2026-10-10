@@ -1,3 +1,4 @@
+
 package com.clubverse.clubverse_backend.service;
 
 import com.clubverse.clubverse_backend.dto.AnnouncementRequest;
@@ -173,6 +174,18 @@ public class AnnouncementService {
                 announcementRepository.save(announcement);
 
         return convertToResponse(saved);
+    }
+
+    // Delete an announcement
+    public void deleteAnnouncement(Long id) {
+
+        Announcement announcement =
+                announcementRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Announcement not found"));
+
+        announcementRepository.delete(announcement);
     }
 
     private AnnouncementResponse convertToResponse(
