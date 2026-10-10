@@ -55,4 +55,17 @@ public class RegistrationController {
                 registrationService.getUserRegistrations(email)
         );
     }
+    
+    @DeleteMapping("/{eventId}/registrations/my")
+    public ResponseEntity<RegistrationResponse> cancelRegistration(
+            @PathVariable Long eventId,
+            Authentication authentication) {
+
+        String email = authentication.getName();
+
+        RegistrationResponse response =
+                registrationService.cancelRegistration(eventId, email);
+
+        return ResponseEntity.ok(response);
+    }
 }

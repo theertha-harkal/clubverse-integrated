@@ -113,6 +113,44 @@ public class RegistrationService {
                 .toList();
     }
 
+
+    public RegistrationResponse cancelRegistration(
+            Long eventId,
+            String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        Registration registration = registrationRepository
+                .findByEventIdAndUserId(eventId, user.getId())
+                .orElseThrow(() ->
+                        new RuntimeException("Registration not found"));
+
+        Registration.Status previousStatus = registration.getStatus();
+
+        if (previousStatus == Registration.Status.CANCELLED) {
+            throw new RuntimeException(
+                    "Registration is already cancelled");
+        }
+
+        registration.setStatus(Registration.Status.CANCELLED);
+
+        Event event = registration.getEvent();
+
+        if (previousStatus == Registration.Status.CONFIRMED
+                && event.getRegisteredCount() > 0) {
+            event.setRegisteredCount(
+                    event.getRegisteredCount() - 1);
+            eventRepository.save(event);
+        }
+
+        Registration savedRegistration =
+                registrationRepository.save(registration);
+
+        return convertToResponse(savedRegistration);
+    }
+
     private RegistrationResponse convertToResponse(
             Registration registration) {
 
@@ -128,4 +166,5 @@ public class RegistrationService {
                 registration.getRegisteredAt()
         );
     }
+    
 }
