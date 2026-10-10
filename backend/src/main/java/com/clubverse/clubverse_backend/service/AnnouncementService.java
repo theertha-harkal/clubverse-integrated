@@ -117,9 +117,15 @@ public class AnnouncementService {
         return convertToResponse(saved);
     }
     
+
 public AnnouncementResponse updateDraft(
         Long id,
-        AnnouncementRequest request) {
+        AnnouncementRequest request,
+        String email) {
+
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() ->
+                    new RuntimeException("User not found"));
 
     Announcement announcement = announcementRepository.findById(id)
             .orElseThrow(() ->
@@ -128,6 +134,11 @@ public AnnouncementResponse updateDraft(
     if (announcement.getStatus() != Announcement.Status.DRAFT) {
         throw new RuntimeException(
                 "Only draft announcements can be edited");
+    }
+
+    if (!announcement.getCreatedBy().equals(user.getId())) {
+        throw new RuntimeException(
+                "You can only edit your own announcements");
     }
 
     announcement.setTitle(request.getTitle());

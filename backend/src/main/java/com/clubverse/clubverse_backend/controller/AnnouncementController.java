@@ -110,10 +110,13 @@ public ResponseEntity<Void> deleteAnnouncement(
 @PutMapping("/{id}/draft")
 public ResponseEntity<AnnouncementResponse> updateDraft(
         @PathVariable Long id,
-        @RequestBody AnnouncementRequest request) {
+        @RequestBody AnnouncementRequest request,
+        Authentication authentication) {
+
+    String email = authentication.getName();
 
     return ResponseEntity.ok(
-            announcementService.updateDraft(id, request)
+            announcementService.updateDraft(id, request, email)
     );
 }
 
