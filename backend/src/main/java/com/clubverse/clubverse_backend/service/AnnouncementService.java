@@ -116,6 +116,62 @@ public class AnnouncementService {
 
         return convertToResponse(saved);
     }
+    
+public AnnouncementResponse updateDraft(
+        Long id,
+        AnnouncementRequest request) {
+
+    Announcement announcement = announcementRepository.findById(id)
+            .orElseThrow(() ->
+                    new RuntimeException("Announcement not found"));
+
+    if (announcement.getStatus() != Announcement.Status.DRAFT) {
+        throw new RuntimeException(
+                "Only draft announcements can be edited");
+    }
+
+    announcement.setTitle(request.getTitle());
+    announcement.setMessageBody(request.getMessageBody());
+    announcement.setMediaUrl(request.getMediaUrl());
+    announcement.setEventId(request.getEventId());
+
+    Announcement.TargetAudience audience;
+
+    try {
+        audience = Announcement.TargetAudience.valueOf(
+                request.getTargetAudience().toUpperCase()
+        );
+    } catch (Exception e) {
+        throw new RuntimeException("Invalid target audience");
+    }
+
+    announcement.setTargetAudience(audience);
+    announcement.setScheduledAt(request.getScheduledAt());
+    announcement.setUpdatedAt(LocalDateTime.now());
+
+    Announcement saved = announcementRepository.save(announcement);
+
+    return convertToResponse(saved);
+}
+
+
+public void publishDueAnnouncements() {
+    LocalDateTime now = LocalDateTime.now();
+
+    List<Announcement> dueAnnouncements =
+            announcementRepository
+                    .findByStatusAndScheduledAtLessThanEqual(
+                            Announcement.Status.SCHEDULED,
+                            now
+                    );
+
+    for (Announcement announcement : dueAnnouncements) {
+        announcement.setStatus(Announcement.Status.PUBLISHED);
+        announcement.setUpdatedAt(now);
+    }
+
+    announcementRepository.saveAll(dueAnnouncements);
+}
 
     public List<AnnouncementResponse> getAllAnnouncements() {
 

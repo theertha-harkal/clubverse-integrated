@@ -106,4 +106,15 @@ public ResponseEntity<Void> deleteAnnouncement(
     announcementService.deleteAnnouncement(id);
     return ResponseEntity.noContent().build();
 }
+
+@PutMapping("/{id}/draft")
+public ResponseEntity<AnnouncementResponse> updateDraft(
+        @PathVariable Long id,
+        @RequestBody AnnouncementRequest request) {
+
+    return ResponseEntity.ok(
+            announcementService.updateDraft(id, request)
+    );
+}
+
 }
