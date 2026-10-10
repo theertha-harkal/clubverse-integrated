@@ -9,6 +9,7 @@ import com.clubverse.clubverse_backend.entity.User;
 import com.clubverse.clubverse_backend.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -28,6 +29,12 @@ public class EventService {
     public EventResponse createEvent(
             EventRequest request,
             String email) {
+
+        if (request.getEventDate() == null || request.getEventDate().isBefore(LocalDate.now())) {
+        throw new IllegalArgumentException(
+                "Event date cannot be in the past or empty"
+        );
+        }
         User user = userRepository.findByEmail(email)
         .orElseThrow(() -> new RuntimeException("User not found"));
 
