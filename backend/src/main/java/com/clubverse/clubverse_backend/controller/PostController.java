@@ -41,6 +41,16 @@ public class PostController {
     // Previously missing: the frontend's PostDetail screen needs to open a
     // single post by id (e.g. from a link or notification) without having
     // to re-fetch and filter the entire /api/posts list client-side.
+    
+@GetMapping("/my")
+public ResponseEntity<List<PostResponse>> getMyPosts(
+        Authentication authentication) {
+
+    String email = authentication.getName();
+
+    return ResponseEntity.ok(postService.getMyPosts(email));
+}
+
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponse> getPost(
             @PathVariable Long postId) {

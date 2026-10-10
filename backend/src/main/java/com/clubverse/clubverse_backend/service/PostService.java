@@ -50,6 +50,16 @@ public class PostService {
                 .map(this::convertToResponse)
                 .toList();
     }
+    public List<PostResponse> getMyPosts(String email) {
+
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    return postRepository.findByUserId(user.getId())
+            .stream()
+            .map(this::convertToResponse)
+            .toList();
+}
 
     public PostResponse getPost(Long postId) {
 
