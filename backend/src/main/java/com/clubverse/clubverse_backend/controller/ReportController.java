@@ -77,4 +77,12 @@ public class ReportController {
             )
     );
     }
+    @GetMapping("/{id}")
+public ResponseEntity<ReportResponse> getReportById(
+        @PathVariable Long id) {
+
+    return ResponseEntity.ok(
+            reportService.getReportById(id)
+    );
+}
 }

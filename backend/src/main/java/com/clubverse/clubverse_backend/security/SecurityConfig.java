@@ -51,8 +51,7 @@ public class SecurityConfig {
         // Students submit reports (reporting a post/event/user); only
         // reading the report queue is admin-only.
         .requestMatchers(HttpMethod.POST, "/api/reports").authenticated()
-        .requestMatchers(HttpMethod.GET, "/api/reports", "/api/reports/page")
-                .hasRole("PLATFORM_ADMIN")
+        .requestMatchers(HttpMethod.GET,"/api/reports","/api/reports/page","/api/reports/*").hasRole("PLATFORM_ADMIN")
 
         // Event status changes: PLATFORM_ADMIN approves/rejects pending
         // events (EventApprovalQueue); CLUB_ADMIN may only cancel their own

@@ -255,6 +255,12 @@ public class ReportService {
             reports.size()
     );
 }
+public ReportResponse getReportById(Long reportId) {
+    Report report = reportRepository.findById(reportId)
+            .orElseThrow(() -> new RuntimeException("Report not found"));
+
+    return convertToResponse(report);
+}
 
     public ReportResponse updateStatus(
             Long reportId,
