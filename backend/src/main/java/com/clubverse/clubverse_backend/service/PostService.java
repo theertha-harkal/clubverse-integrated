@@ -7,6 +7,8 @@ import com.clubverse.clubverse_backend.entity.User;
 import com.clubverse.clubverse_backend.repository.PostRepository;
 import com.clubverse.clubverse_backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import com.clubverse.clubverse_backend.entity.PostLike;
+import com.clubverse.clubverse_backend.repository.PostLikeRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,11 +18,13 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final PostLikeRepository postLikeRepository;
 
     public PostService(PostRepository postRepository,
-                       UserRepository userRepository) {
+                       UserRepository userRepository, PostLikeRepository postLikeRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
+        this.postLikeRepository = postLikeRepository;
     }
 
     public PostResponse createPost(PostRequest request, String email) {
@@ -68,6 +72,47 @@ public class PostService {
 
         return convertToResponse(post);
     }
+    
+public PostResponse likePost(Long postId, String email) {
+
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post not found"));
+
+    if (postLikeRepository.findByPostIdAndUserId(
+            postId, user.getId()).isEmpty()) {
+
+        PostLike postLike = new PostLike();
+        postLike.setPost(post);
+        postLike.setUser(user);
+        postLikeRepository.save(postLike);
+
+        post.setLikeCount((int) postLikeRepository.countByPostId(postId));
+        postRepository.save(post);
+    }
+
+    return convertToResponse(post);
+}
+
+public PostResponse unlikePost(Long postId, String email) {
+
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new RuntimeException("Post not found"));
+
+    postLikeRepository.findByPostIdAndUserId(postId, user.getId())
+            .ifPresent(postLikeRepository::delete);
+
+    post.setLikeCount((int) postLikeRepository.countByPostId(postId));
+    postRepository.save(post);
+
+    return convertToResponse(post);
+}
+
 
     private PostResponse convertToResponse(Post post) {
 

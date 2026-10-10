@@ -57,4 +57,29 @@ public ResponseEntity<List<PostResponse>> getMyPosts(
 
         return ResponseEntity.ok(postService.getPost(postId));
     }
+    
+@PostMapping("/{postId}/like")
+public ResponseEntity<PostResponse> likePost(
+        @PathVariable Long postId,
+        Authentication authentication) {
+
+    String email = authentication.getName();
+
+    return ResponseEntity.ok(
+            postService.likePost(postId, email)
+    );
+}
+
+@DeleteMapping("/{postId}/like")
+public ResponseEntity<PostResponse> unlikePost(
+        @PathVariable Long postId,
+        Authentication authentication) {
+
+    String email = authentication.getName();
+
+    return ResponseEntity.ok(
+            postService.unlikePost(postId, email)
+    );
+}
+
 }
