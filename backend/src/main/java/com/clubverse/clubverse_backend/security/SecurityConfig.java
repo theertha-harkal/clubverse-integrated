@@ -79,6 +79,8 @@ public class SecurityConfig {
 
         // Any authenticated user (posts, comments, events GET, own
         // registrations, volunteer opportunities GET, applying to a role)
+        .requestMatchers(HttpMethod.GET, "/api/users/students")
+        .hasRole("PLATFORM_ADMIN")
         .anyRequest().authenticated()
 )
                 .addFilterBefore(
