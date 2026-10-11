@@ -41,6 +41,8 @@ public class SecurityConfig {
                 "/api/auth/login"
         ).permitAll()
 
+        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+
         // Published announcements are read by students too (HomeFeed /
         // CampusAnnouncements), not just club/campus admins - previously
         // this fell under the CLUB_ADMIN/PLATFORM_ADMIN-only rule below

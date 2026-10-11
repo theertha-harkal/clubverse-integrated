@@ -4,6 +4,11 @@ import com.clubverse.clubverse_backend.dto.EventRequest;
 import com.clubverse.clubverse_backend.dto.EventResponse;
 import com.clubverse.clubverse_backend.service.EventService;
 
+import com.clubverse.clubverse_backend.service.EventFileService;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -15,9 +20,12 @@ import java.util.List;
 public class EventController {
 
     private final EventService eventService;
+    private final EventFileService eventFileService;
 
-    public EventController(EventService eventService) {
+    public EventController(EventService eventService ,
+        EventFileService eventFileService) {
         this.eventService = eventService;
+        this.eventFileService = eventFileService;
     }
 
     @PostMapping
@@ -63,4 +71,15 @@ public class EventController {
                 eventService.updateStatus(eventId, status)
         );
     }
+    @PostMapping(
+        value = "/upload-poster",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+)
+public ResponseEntity<String> uploadPoster(
+        @RequestParam("file") MultipartFile file)
+        throws IOException {
+
+    String fileUrl = eventFileService.uploadPoster(file);
+    return ResponseEntity.ok(fileUrl);
+}
 }
