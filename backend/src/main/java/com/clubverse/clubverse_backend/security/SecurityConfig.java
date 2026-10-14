@@ -35,14 +35,12 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .headers(hs -> hs.frameOptions(custom -> custom.disable()))
                 .authorizeHttpRequests(auth -> auth
-                     // Allow access to H2 console for testing
-                     .requestMatchers("/h2-console/**").permitAll()
-            // Public
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .requestMatchers(
-                    "/api/auth/register",
-                    "/api/auth/login"
-            ).permitAll()
+        // Public
+        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+        .requestMatchers(
+                "/api/auth/register",
+                "/api/auth/login"
+        ).permitAll()
 
             // Published announcements are read by students too (HomeFeed /
             // CampusAnnouncements), not just club/campus admins - previously
@@ -51,11 +49,11 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/announcements/published")
                     .authenticated()
 
-            // Students submit reports (reporting a post/event/user); only
-            // reading the report queue is admin-only.
-            .requestMatchers(HttpMethod.POST, "/api/reports").authenticated()
-            .requestMatchers(HttpMethod.GET, "/api/reports", "/api/reports/page")
-                    .hasRole("PLATFORM_ADMIN")
+        // Students submit reports (reporting a post/event/user); only
+        // reading the report queue is admin-only.
+        .requestMatchers(HttpMethod.POST, "/api/reports").authenticated()
+        .requestMatchers(HttpMethod.GET, "/api/reports", "/api/reports/page")
+                .hasRole("PLATFORM_ADMIN")
 
             // Event status changes: PLATFORM_ADMIN approves/rejects pending
             // events (EventApprovalQueue); CLUB_ADMIN may only cancel their own
@@ -81,10 +79,10 @@ public class SecurityConfig {
                     "/api/announcements/**"
             ).hasAnyRole("CLUB_ADMIN", "PLATFORM_ADMIN")
 
-            // Any authenticated user (posts, comments, events GET, own
-            // registrations, volunteer opportunities GET, applying to a role)
-            .anyRequest().authenticated()
-        )
+        // Any authenticated user (posts, comments, events GET, own
+        // registrations, volunteer opportunities GET, applying to a role)
+        .anyRequest().authenticated()
+)
                 .addFilterBefore(
                         jwtAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class

@@ -99,4 +99,25 @@ public class AnnouncementController {
                 )
         );
     }
+    @DeleteMapping("/{id}")
+public ResponseEntity<Void> deleteAnnouncement(
+        @PathVariable Long id) {
+
+    announcementService.deleteAnnouncement(id);
+    return ResponseEntity.noContent().build();
+}
+
+@PutMapping("/{id}/draft")
+public ResponseEntity<AnnouncementResponse> updateDraft(
+        @PathVariable Long id,
+        @RequestBody AnnouncementRequest request,
+        Authentication authentication) {
+
+    String email = authentication.getName();
+
+    return ResponseEntity.ok(
+            announcementService.updateDraft(id, request, email)
+    );
+}
+
 }

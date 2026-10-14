@@ -45,40 +45,20 @@ public class PostController {
     // Previously missing: the frontend's PostDetail screen needs to open a
     // single post by id (e.g. from a link or notification) without having
     // to re-fetch and filter the entire /api/posts list client-side.
+    
+@GetMapping("/my")
+public ResponseEntity<List<PostResponse>> getMyPosts(
+        Authentication authentication) {
+
+    String email = authentication.getName();
+
+    return ResponseEntity.ok(postService.getMyPosts(email));
+}
+
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponse> getPost(
             @PathVariable("postId") Long postId) {
 
         return ResponseEntity.ok(postService.getPost(postId));
-    }
-
-    @PostMapping("/{postId}/like")
-    public ResponseEntity<Map<String, Object>> toggleLike(
-            @PathVariable("postId") Long postId,
-            Authentication authentication) {
-
-        String email = authentication.getName();
-        boolean liked = likeService.toggleLike(postId, email);
-        long likeCount = likeService.getLikeCount(postId);
-
-        return ResponseEntity.ok(Map.of(
-                "liked", liked,
-                "likeCount", likeCount
-        ));
-    }
-
-    @GetMapping("/{postId}/like")
-    public ResponseEntity<Map<String, Object>> getLikeStatus(
-            @PathVariable("postId") Long postId,
-            Authentication authentication) {
-
-        String email = authentication.getName();
-        boolean liked = likeService.hasUserLiked(postId, email);
-        long likeCount = likeService.getLikeCount(postId);
-
-        return ResponseEntity.ok(Map.of(
-                "liked", liked,
-                "likeCount", likeCount
-        ));
     }
 }

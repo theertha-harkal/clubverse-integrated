@@ -1,3 +1,4 @@
+
 package com.clubverse.clubverse_backend.service;
 
 import com.clubverse.clubverse_backend.dto.AnnouncementRequest;
@@ -115,6 +116,73 @@ public class AnnouncementService {
 
         return convertToResponse(saved);
     }
+    
+
+public AnnouncementResponse updateDraft(
+        Long id,
+        AnnouncementRequest request,
+        String email) {
+
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() ->
+                    new RuntimeException("User not found"));
+
+    Announcement announcement = announcementRepository.findById(id)
+            .orElseThrow(() ->
+                    new RuntimeException("Announcement not found"));
+
+    if (announcement.getStatus() != Announcement.Status.DRAFT) {
+        throw new RuntimeException(
+                "Only draft announcements can be edited");
+    }
+
+    if (!announcement.getCreatedBy().equals(user.getId())) {
+        throw new RuntimeException(
+                "You can only edit your own announcements");
+    }
+
+    announcement.setTitle(request.getTitle());
+    announcement.setMessageBody(request.getMessageBody());
+    announcement.setMediaUrl(request.getMediaUrl());
+    announcement.setEventId(request.getEventId());
+
+    Announcement.TargetAudience audience;
+
+    try {
+        audience = Announcement.TargetAudience.valueOf(
+                request.getTargetAudience().toUpperCase()
+        );
+    } catch (Exception e) {
+        throw new RuntimeException("Invalid target audience");
+    }
+
+    announcement.setTargetAudience(audience);
+    announcement.setScheduledAt(request.getScheduledAt());
+    announcement.setUpdatedAt(LocalDateTime.now());
+
+    Announcement saved = announcementRepository.save(announcement);
+
+    return convertToResponse(saved);
+}
+
+
+public void publishDueAnnouncements() {
+    LocalDateTime now = LocalDateTime.now();
+
+    List<Announcement> dueAnnouncements =
+            announcementRepository
+                    .findByStatusAndScheduledAtLessThanEqual(
+                            Announcement.Status.SCHEDULED,
+                            now
+                    );
+
+    for (Announcement announcement : dueAnnouncements) {
+        announcement.setStatus(Announcement.Status.PUBLISHED);
+        announcement.setUpdatedAt(now);
+    }
+
+    announcementRepository.saveAll(dueAnnouncements);
+}
 
     public List<AnnouncementResponse> getAllAnnouncements() {
 
@@ -173,6 +241,18 @@ public class AnnouncementService {
                 announcementRepository.save(announcement);
 
         return convertToResponse(saved);
+    }
+
+    // Delete an announcement
+    public void deleteAnnouncement(Long id) {
+
+        Announcement announcement =
+                announcementRepository.findById(id)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Announcement not found"));
+
+        announcementRepository.delete(announcement);
     }
 
     private AnnouncementResponse convertToResponse(
