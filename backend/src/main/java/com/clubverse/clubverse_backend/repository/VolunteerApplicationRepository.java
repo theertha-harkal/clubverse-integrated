@@ -21,4 +21,6 @@ public interface VolunteerApplicationRepository
 
     List<VolunteerApplication> findByStatus(
             VolunteerApplication.Status status);
+
+    long countByOpportunityIdAndUserId(Long opportunityId, Long userId);
 }

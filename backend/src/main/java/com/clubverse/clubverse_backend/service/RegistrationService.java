@@ -7,8 +7,8 @@ import com.clubverse.clubverse_backend.entity.User;
 import com.clubverse.clubverse_backend.repository.EventRepository;
 import com.clubverse.clubverse_backend.repository.RegistrationRepository;
 import com.clubverse.clubverse_backend.repository.UserRepository;
-
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +30,7 @@ public class RegistrationService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public RegistrationResponse register(
             Long eventId,
             String email) {
@@ -41,14 +42,6 @@ public class RegistrationService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() ->
                         new RuntimeException("Event not found"));
-
-        if (registrationRepository
-                .findByEventIdAndUserId(eventId, user.getId())
-                .isPresent()) {
-
-            throw new RuntimeException(
-                    "User already registered for this event");
-        }
 
         if (event.getRegistrationDeadline() != null
                 && event.getRegistrationDeadline()
@@ -64,6 +57,14 @@ public class RegistrationService {
 
             throw new RuntimeException(
                     "Event registration is full");
+        }
+
+        if (registrationRepository
+                .findByEventIdAndUserId(eventId, user.getId())
+                .isPresent()) {
+
+            throw new RuntimeException(
+                    "User already registered for this event");
         }
 
         Registration registration = new Registration();

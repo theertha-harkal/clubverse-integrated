@@ -23,7 +23,7 @@ public class RegistrationController {
 
     @PostMapping("/{eventId}/registrations")
     public ResponseEntity<RegistrationResponse> register(
-            @PathVariable Long eventId,
+            @PathVariable("eventId") Long eventId,
             Authentication authentication) {
 
         String email = authentication.getName();
@@ -37,7 +37,7 @@ public class RegistrationController {
     @GetMapping("/{eventId}/registrations")
     public ResponseEntity<List<RegistrationResponse>>
     getEventRegistrations(
-            @PathVariable Long eventId) {
+            @PathVariable("eventId") Long eventId) {
 
         return ResponseEntity.ok(
                 registrationService.getEventRegistrations(eventId)

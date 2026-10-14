@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { MoreHorizontal, ThumbsUp, MessageCircle, Share2, Smile, Send } from "lucide-react";
 import { T, TopBar, Tag, LoadingState, ErrorNotice } from "../../lib/ui";
 import { PostsApi, ApiError } from "../../lib/api";
@@ -42,19 +42,46 @@ export default function PostDetail({ go, post: postProp }) {
   const [commentText, setCommentText] = useState("");
   const [commentAnon, setCommentAnon] = useState(false);
   const [posting, setPosting] = useState(false);
+  const [liked, setLiked] = useState(false);
 
   const postId = postProp?.id;
+
+  const fetchLikeStatus = useCallback(async () => {
+    if (!postId) return;
+    try {
+      const result = await PostsApi.getLikeStatus(postId);
+      setLiked(result.liked);
+    } catch (err) {
+      // Ignore - user might not be logged in
+    }
+  }, [postId]);
 
   useEffect(() => {
     if (!postId) { setLoading(false); setError("No post selected."); return; }
     let cancelled = false;
     setLoading(true);
-    Promise.all([PostsApi.get(postId), PostsApi.comments(postId)])
+    Promise.all([PostsApi.get(postId), PostsApi.comments(postId), fetchLikeStatus()])
       .then(([p, c]) => { if (!cancelled) { setPost(p); setComments(c); } })
       .catch((err) => { if (!cancelled) setError(err instanceof ApiError ? err.message : "Couldn't load this post."); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [postId]);
+  }, [postId, fetchLikeStatus]);
+
+  const handleLike = async () => {
+    if (!postId) return;
+    const optimisticLiked = !liked;
+    setLiked(optimisticLiked);
+    setPost(prev => prev ? { ...prev, likeCount: optimisticLiked ? prev.likeCount + 1 : prev.likeCount - 1 } : null);
+
+    try {
+      const result = await PostsApi.like(postId);
+      setLiked(result.liked);
+      setPost(prev => prev ? { ...prev, likeCount: result.likeCount } : null);
+    } catch (err) {
+      setLiked(!optimisticLiked);
+      setPost(prev => prev ? { ...prev, likeCount: optimisticLiked ? prev.likeCount - 1 : prev.likeCount + 1 } : null);
+    }
+  };
 
   const submitComment = async (e) => {
     e.preventDefault();
@@ -102,7 +129,14 @@ export default function PostDetail({ go, post: postProp }) {
 
               <div className="flex items-center justify-between pt-3" style={{ borderTop: `1px solid ${T.sky}` }}>
                 <div className="flex gap-6 items-center">
-                  <div className="flex gap-2 items-center"><ThumbsUp size={17} color={T.muted} /><span className="font-['Inter'] text-[15px]" style={{ color: T.muted }}>{post.likeCount}</span></div>
+                  <button
+                    onClick={handleLike}
+                    className="flex gap-2 items-center transition-colors cursor-pointer"
+                    style={{ color: liked ? "#e53e3e" : T.muted }}
+                  >
+                    <ThumbsUp size={17} color={liked ? "#e53e3e" : T.muted} fill={liked ? "#e53e3e" : "none"} />
+                    <span className="font-['Inter'] text-[15px]">{post.likeCount}</span>
+                  </button>
                   <div className="flex gap-2 items-center"><MessageCircle size={17} color={T.primary} /><span className="font-['Inter'] text-[15px]" style={{ color: T.primary }}>{comments.length}</span></div>
                   <Share2 size={16} color={T.faint} />
                 </div>

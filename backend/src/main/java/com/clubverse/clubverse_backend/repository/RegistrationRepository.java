@@ -16,4 +16,6 @@ public interface RegistrationRepository
     List<Registration> findByEventId(Long eventId);
 
     List<Registration> findByUserId(Long userId);
+
+    long countByEventIdAndUserId(Long eventId, Long userId);
 }

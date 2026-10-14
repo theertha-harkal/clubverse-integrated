@@ -13,6 +13,7 @@ import com.clubverse.clubverse_backend.repository.UserRepository;
 import com.clubverse.clubverse_backend.repository.VolunteerApplicationRepository;
 import com.clubverse.clubverse_backend.repository.VolunteerOpportunityRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -90,6 +91,7 @@ public class VolunteerService {
                 .toList();
     }
 
+    @Transactional
     public VolunteerApplicationResponse apply(
             Long opportunityId,
             VolunteerApplicationRequest request,

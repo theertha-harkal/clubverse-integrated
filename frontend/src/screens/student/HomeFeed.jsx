@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Bell, ImagePlus, ThumbsUp, MessageCircle, Share2, Home, Users, Calendar, User, Sparkles } from "lucide-react";
 import { T, Pill, BottomNav, LoadingState, ErrorNotice, EmptyState } from "../../lib/ui";
 import { PostsApi, ApiError } from "../../lib/api";
@@ -14,7 +14,14 @@ function timeAgo(iso) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-function PostCard({ p, openPost }) {
+function PostCard({ p, openPost, likedPosts, onLike }) {
+  const isLiked = likedPosts.has(p.id);
+
+  const handleLikeClick = (e) => {
+    e.stopPropagation();
+    onLike(p.id, !isLiked);
+  };
+
   return (
     <div onClick={() => openPost(p)} className="bg-white border rounded-3xl p-5 flex flex-col gap-2 cursor-pointer" style={{ borderColor: "rgba(199,196,215,0.2)", boxShadow: "0px 4px 10px rgba(0,0,0,0.05)" }}>
       <div className="flex items-start justify-between">
@@ -35,10 +42,17 @@ function PostCard({ p, openPost }) {
       <div className="font-['Inter'] text-[14px] leading-relaxed line-clamp-4" style={{ color: T.muted }}>{p.content}</div>
       {p.mediaUrl && <img src={p.mediaUrl} alt="" className="h-[140px] w-full object-cover rounded-xl" />}
       <div className="flex items-center justify-between pt-3" style={{ borderTop: "1px solid rgba(199,196,215,0.2)" }}>
-        <div className="flex items-center gap-1 rounded-full px-1 py-1" style={{ background: "#dce9ff" }}>
-          <span className="p-1.5"><ThumbsUp size={13} color={T.ink} /></span>
-          <span className="font-['Hanken_Grotesk'] font-semibold text-[13px] w-5 text-center" style={{ color: T.ink }}>{p.likeCount}</span>
-        </div>
+        <button
+          onClick={handleLikeClick}
+          className="flex items-center gap-1 rounded-full px-1 py-1 transition-colors"
+          style={{
+            background: isLiked ? "#ff6b6b" : "#dce9ff",
+            cursor: "pointer"
+          }}
+        >
+          <span className="p-1.5"><ThumbsUp size={13} color={isLiked ? "white" : T.ink} /></span>
+          <span className="font-['Hanken_Grotesk'] font-semibold text-[13px] w-5 text-center" style={{ color: isLiked ? "white" : T.ink }}>{p.likeCount}</span>
+        </button>
         <div className="flex items-center gap-1.5 text-[13px] font-['Inter']" style={{ color: T.muted }}>
           <MessageCircle size={15} /> Comments
         </div>
@@ -53,6 +67,7 @@ export default function HomeFeed({ go, openPost }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
+  const [likedPosts, setLikedPosts] = useState(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -70,6 +85,44 @@ export default function HomeFeed({ go, openPost }) {
   }, [posts]);
 
   const visiblePosts = activeCategory === "All" ? posts : posts.filter((p) => p.community === activeCategory);
+
+  const handleLike = useCallback(async (postId, optimisticLiked) => {
+    setLikedPosts(prev => {
+      const next = new Set(prev);
+      if (optimisticLiked) next.add(postId); else next.delete(postId);
+      return next;
+    });
+
+    setPosts(prev => prev.map(p => {
+      if (p.id !== postId) return p;
+      return { ...p, likeCount: optimisticLiked ? p.likeCount + 1 : p.likeCount - 1 };
+    }));
+
+    try {
+      const result = await PostsApi.like(postId);
+      // Server returns the actual state - sync with it
+      setLikedPosts(prev => {
+        const next = new Set(prev);
+        if (result.liked) next.add(postId); else next.delete(postId);
+        return next;
+      });
+      setPosts(prev => prev.map(p => {
+        if (p.id !== postId) return p;
+        return { ...p, likeCount: result.likeCount };
+      }));
+    } catch (err) {
+      // Rollback on error
+      setLikedPosts(prev => {
+        const next = new Set(prev);
+        if (optimisticLiked) next.delete(postId); else next.add(postId);
+        return next;
+      });
+      setPosts(prev => prev.map(p => {
+        if (p.id !== postId) return p;
+        return { ...p, likeCount: optimisticLiked ? p.likeCount - 1 : p.likeCount + 1 };
+      }));
+    }
+  }, []);
 
   return (
     <div className="flex flex-col gap-8 items-center pb-32 relative">
@@ -104,10 +157,10 @@ export default function HomeFeed({ go, openPost }) {
         {error && <ErrorNotice text={error} />}
         {loading && <LoadingState label="Loading posts…" />}
         {!loading && !error && visiblePosts.length === 0 && <EmptyState text="No posts yet. Be the first to post!" />}
-        {!loading && visiblePosts.map(p => <PostCard key={p.id} p={p} openPost={openPost} />)}
+        {!loading && visiblePosts.map(p => <PostCard key={p.id} p={p} openPost={openPost} likedPosts={likedPosts} onLike={handleLike} />)}
       </div>
 
-      <button onClick={() => go("create")} className="absolute right-4 bottom-24 rounded-2xl w-14 h-14 flex items-center justify-center cursor-pointer border-none" style={{ background: T.primary, boxShadow: "0px 10px 15px -3px rgba(0,0,0,0.15)" }}>
+      <button onClick={() => go("create")} className="absolute right-4 bottom-24 rounded-2xl w-14 h-14 flex items-center justify-center cursor-pointer border-none" style={{ background: T.primary, boxShadow: "0px 10px 15px-3px rgba(0,0,0,0.15)" }}>
         <span className="text-white text-2xl leading-none">+</span>
       </button>
 

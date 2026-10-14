@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Test</title>
+</head>
+<body>
+    <h1>CORS Test</h1>
+    <div id="result"></div>
+    <script>
+        async function testRegister() {
+            const url = 'http://localhost:8080/api/auth/register';
+            const payload = {
+                name: 'Test User',
+                email: 'test@example.com',
+                password: 'testpass',
+                rollNumber: '',
+                batch: '',
+                department: ''
+            };
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    document.getElementById('result').textContent = 'Error: ' + response.status + ' - ' + (errorData.message || '');
+                } else {
+                    const data = await response.json();
+                    document.getElementById('result').textContent = 'Success: ' + JSON.stringify(data);
+                }
+            } catch (err) {
+                document.getElementById('result').textContent = 'Fetch error: ' + err.message;
+            }
+        }
+        testRegister();
+    </script>
+</body>
+</html>

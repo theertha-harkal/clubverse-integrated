@@ -42,7 +42,7 @@ public class EventController {
 
     @GetMapping("/{eventId}")
     public ResponseEntity<EventResponse> getEvent(
-            @PathVariable Long eventId) {
+            @PathVariable("eventId") Long eventId) {
 
         return ResponseEntity.ok(
                 eventService.getEvent(eventId)
@@ -56,8 +56,8 @@ public class EventController {
     // existing AnnouncementController#updateStatus pattern.
     @PutMapping("/{eventId}/status")
     public ResponseEntity<EventResponse> updateStatus(
-            @PathVariable Long eventId,
-            @RequestParam String status) {
+            @PathVariable("eventId") Long eventId,
+            @RequestParam("status") String status) {
 
         return ResponseEntity.ok(
                 eventService.updateStatus(eventId, status)

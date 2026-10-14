@@ -2,6 +2,7 @@ package com.clubverse.clubverse_backend.controller;
 
 import com.clubverse.clubverse_backend.dto.PostRequest;
 import com.clubverse.clubverse_backend.dto.PostResponse;
+import com.clubverse.clubverse_backend.service.LikeService;
 import com.clubverse.clubverse_backend.service.PostService;
 
 import org.springframework.http.ResponseEntity;
@@ -9,15 +10,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/posts")
 public class PostController {
 
     private final PostService postService;
+    private final LikeService likeService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, LikeService likeService) {
         this.postService = postService;
+        this.likeService = likeService;
     }
 
     @PostMapping
@@ -43,8 +47,38 @@ public class PostController {
     // to re-fetch and filter the entire /api/posts list client-side.
     @GetMapping("/{postId}")
     public ResponseEntity<PostResponse> getPost(
-            @PathVariable Long postId) {
+            @PathVariable("postId") Long postId) {
 
         return ResponseEntity.ok(postService.getPost(postId));
+    }
+
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<Map<String, Object>> toggleLike(
+            @PathVariable("postId") Long postId,
+            Authentication authentication) {
+
+        String email = authentication.getName();
+        boolean liked = likeService.toggleLike(postId, email);
+        long likeCount = likeService.getLikeCount(postId);
+
+        return ResponseEntity.ok(Map.of(
+                "liked", liked,
+                "likeCount", likeCount
+        ));
+    }
+
+    @GetMapping("/{postId}/like")
+    public ResponseEntity<Map<String, Object>> getLikeStatus(
+            @PathVariable("postId") Long postId,
+            Authentication authentication) {
+
+        String email = authentication.getName();
+        boolean liked = likeService.hasUserLiked(postId, email);
+        long likeCount = likeService.getLikeCount(postId);
+
+        return ResponseEntity.ok(Map.of(
+                "liked", liked,
+                "likeCount", likeCount
+        ));
     }
 }
