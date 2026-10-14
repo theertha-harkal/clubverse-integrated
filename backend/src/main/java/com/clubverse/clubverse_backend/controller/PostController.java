@@ -61,4 +61,34 @@ public ResponseEntity<List<PostResponse>> getMyPosts(
 
         return ResponseEntity.ok(postService.getPost(postId));
     }
+
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<Map<String, Object>> toggleLike(
+            @PathVariable("postId") Long postId,
+            Authentication authentication) {
+
+        String email = authentication.getName();
+        boolean liked = likeService.toggleLike(postId, email);
+        long likeCount = likeService.getLikeCount(postId);
+
+        return ResponseEntity.ok(Map.of(
+                "liked", liked,
+                "likeCount", likeCount
+        ));
+    }
+
+    @GetMapping("/{postId}/like")
+    public ResponseEntity<Map<String, Object>> getLikeStatus(
+            @PathVariable("postId") Long postId,
+            Authentication authentication) {
+
+        String email = authentication.getName();
+        boolean liked = likeService.hasUserLiked(postId, email);
+        long likeCount = likeService.getLikeCount(postId);
+
+        return ResponseEntity.ok(Map.of(
+                "liked", liked,
+                "likeCount", likeCount
+        ));
+    }
 }

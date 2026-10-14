@@ -29,6 +29,22 @@ public class DataInitializer {
                 userRepository.save(adminUser);
                 System.out.println("Created admin user: " + adminEmail);
             }
+
+            // Create a campus (platform) admin user if not exists
+            String campusAdminEmail = "campusadmin@test.com";
+            if (!userRepository.existsByEmail(campusAdminEmail)) {
+                User campusAdmin = new User();
+                campusAdmin.setName("Campus Admin");
+                campusAdmin.setEmail(campusAdminEmail);
+                campusAdmin.setPassword(passwordEncoder.encode("campuspass"));
+                campusAdmin.setRole(User.Role.PLATFORM_ADMIN);
+                // optional fields
+                campusAdmin.setBatch("2024");
+                campusAdmin.setDepartment("ADMIN");
+                campusAdmin.setRollNumber("CAMPUS001");
+                userRepository.save(campusAdmin);
+                System.out.println("Created campus admin user: " + campusAdminEmail);
+            }
         };
     }
 }
